@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head> <title>Landing Page</title>
+	<link rel="stylesheet" href="../static/css/bootstrap.min.css">
+</head>
+<body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+	{% if messages %}
+		{% for message in messages %}
+		<div class="alert alert-warning" style="border: 1px" role="alert">{{ message[1] }}</div>
+		{% endfor %}
+	{% endif %}
+{% endwith %}
+
+<div style="positon:relative">
+<div class="panel panel-primary" style="position:absolute; top:30%; left:50%; transform:translateX(-50%) translateY(-00%)">
+<div class="panel-heading"> <strong class="panel-title">Operations</strong> </div>
+<div class="panel-body">
+<form action="/landingpage" method="POST">
+	<table style="border-collapse:separate; border-spacing:20px 20px">
+	<tr> <td> <input type="submit" name="submit" class="btn btn-info btn-block" value="Add User" placeholder="Add User"/> </td>
+	<td> <input type="submit" name="submit" class="btn btn-warning btn-block" value="Remove User" placeholder="Remove User"/> </td> </tr>
+	<tr> <td> <input type="submit" name="submit" class="btn btn-success btn-block" value="Access Devices" placeholder="Access Devices"/> </td>
+	<td> <input type="submit" name="submit" class="btn btn-warning btn-block" value="Disconnect" placeholder="Access IoT Device"/> </td> </tr>
+	<tr></tr>
+	<tr> <td> <input type="submit" name="submit" class="btn btn-danger btn-block" value="Logout" placeholder="Logout"/> </td> </tr>
+	</table>
+</form>
+</div>
+</div>
+</div>
+
+</body>
+</html>

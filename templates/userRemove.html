@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head> <title>User Remove</title>
+	<link rel="stylesheet" href="../static/css/bootstrap.min.css">
+</head>
+<body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+	{% if messages %}
+		{% for message in messages %}
+		<div class="alert alert-warning" role="alert">
+			{{ message[1] }}
+		</div>
+		{% endfor %}
+	{% endif %}
+{% endwith %}
+
+<div style="positon:relative">
+<div class="panel panel-primary" style="position:absolute; top:30%; left:50%; transform:translateX(-50%) translateY(-00%)">
+<div class="panel-heading"> <strong class="panel-title">User Remove</strong> </div>
+<div class="panel-body">
+<form action="/userremove" method="post">
+	{{ form.csrf }} 
+	<table style="border-collapse:separate; border-spacing:20px 20px; table-layout:fixed; width:100%">
+	<tr>
+	{% for user in userlist %}
+		<td style="overflow:hidden;white-space:nowrap"> <input type="radio" name="username_ui" value="{{ user }}"> {{ user }}  </td>
+		{% if loop.index % 2  == 0 %}
+			</tr>
+		{% endif %}
+	{% endfor %}
+	<tr> <td> <input type="submit" name="submit" class="btn btn-danger btn-block" value="Remove"/> </td> </tr>
+	</table>
+</form>
+</div>
+</div>
+</div>
+</body>
+</html>
