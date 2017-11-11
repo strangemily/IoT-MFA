@@ -1,16 +1,15 @@
 #! /usr/bin/python -tt
 
 # Import Libraries
-import ssl,requests,random
+import ssl,requests,random,bcrypt,re,arpreq
 from flask import Flask, flash, render_template, redirect, request, session, abort
-from wtforms import Form, TextField, validators, SubmitField, RadioField
 from flask_sqlalchemy import SQLAlchemy
 #from textmagic.rest import TextmagicRestClient
 
 # Flask App Declarations
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.config['SECRET_KEY'] = ""
+app.config['SECRET_KEY'] = ''
 
 # Flask Database (SQLite - SQLAlchemy) Declarations
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./database/iotweb.db'
@@ -22,7 +21,7 @@ context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 context.load_cert_chain('./certs/iotmfaserver.crt','./certs/iotmfaserver.key')
 
 # API credentials - SMS and Email
-#smsapi_client = TextmagicRestClient("","")
+#smsapi_client = TextmagicRestClient('','')
 emailapi_link = ""
 emailapi_from = ""
 emailapi_key = ""
@@ -41,28 +40,15 @@ class User(db.Model):
 	email = db.Column(db.String(64), nullable=False)
 	phone = db.Column(db.String(64), nullable=False)
 
-# Testing Database changes, Remove when deployed
-#	def __repr__(self):
-#		return '<ID %r User %r Password %r>' % (self.id, self.username, self.password)
+	def __repr__(self):
+		return '<ID %r User %r Password %r>' % (self.id, self.username, self.password)
 
-# Flask WTForms
-class SignupForm(Form):
-	username_ui = TextField('Username:', validators=[validators.required()])
-	password_ui = TextField('Password:', validators=[validators.required()])
-	cfpasswd_ui = TextField('Confirm Password:', validators=[validators.required()])
-	email_ui = TextField('Email:', validators=[validators.required()])
-	phone_ui = TextField('Phone:', validators=[validators.required()])
+class IoT(db.Model):
+	mac_addr = db.Column(db.String(64), primary_key=True)
+	ip_addr = db.Column(db.String(64), nullable=False)
+	dev_status = db.Column(db.String(64), nullable=False)
+	lease_time = db.Column(db.String(64), nullable=False)
+	dev_name = db.Column(db.String(64), nullable=False)
 
-class UserRemoveForm(Form):
-	user_ui = RadioField('Users', choices=[('1','2')])
-
-class LoginForm(Form):
-	username_ui = TextField('Username:', validators=[validators.required()])
-	password_ui = TextField('Password:', validators=[validators.required()])
-
-class userVerifyForm(Form):
-	otp_ui = TextField('OTP:', validators=[validators.required()])
-
-class userPasswdResetForm(Form):
-	password_ui = TextField('Password:', validators=[validators.required()])
-	cfpasswd_ui = TextField('Confirm Password:', validators=[validators.required()])
+	def __repr__(self):
+		return '<MAC %r IP %r Status %r Lease %r Device %r>' % (self.mac_addr, self.ip_addr, self.dev_status, self.lease_time, self.dev_name)
