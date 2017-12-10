@@ -31,7 +31,6 @@ default_name = ""
 default_phone = ""
 default_email = ""
 
-
 # SQL database model
 class User(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -52,3 +51,15 @@ class IoT(db.Model):
 
 	def __repr__(self):
 		return '<MAC %r IP %r Status %r Lease %r Device %r>' % (self.mac_addr, self.ip_addr, self.dev_status, self.lease_time, self.dev_name)
+
+class AuthConns(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	username = db.Column(db.String(64), nullable=False)
+	ip_addr = db.Column(db.String(64), nullable=False)
+	ip_port = db.Column(db.Integer, nullable=True)
+	sessiontime = db.Column(db.String(64), nullable=False)
+	fw_status = db.Column(db.Boolean())
+	port_status = db.Column(db.Boolean())
+
+	def __repr__(self):
+		return '<User %r IP %r Time %r>' % (self.username, self.ip_addr, self.sessiontime)
