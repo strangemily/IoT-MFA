@@ -1,11 +1,16 @@
 #! /usr/bin/python -tt
 
 from configiotweb import *
-import firewalliot
+import firewalliot, dynfwserv
+from datetime import timedelta
+
+@app.before_request
+def make_session_permananet():
+	session.permanent = True
+	app.permanent_session_lifetime = timedelta(minutes=20)
 
 @app.route("/", methods=['GET','POST'])
 def home():
-#	print request.environ['REMOTE_ADDR']
 	if not session.get('logged_in'):
 		if not adminCheck():
 			flash("Admin not found, Create Admin !")
@@ -58,8 +63,12 @@ def userVerify():
 				else:
 					session['logged_in'] = True
 					session['username'] = userLogin.username
+					session['ip_addr'] = request.remote_addr
 					accessDevices.display_iot=[]
-					accessDevices.access_device=False
+					if CheckAuthConns(session['username'],session['ip_addr']):
+						accessDevices.access_device=True
+					else:
+						accessDevices.access_device=False
 			else:
 				session['logged_in'] = False
 				flash('Wrong OTP!')
@@ -83,7 +92,6 @@ def passwdreset():
 					userdb = User.query.filter_by(username=userLogin.username).first()
 					userdb.password = bcrypt.hashpw(str(password_ui), bcrypt.gensalt())
 					db.session.commit()
-					flash(User.query.all())
 					flash('Password changed, Login with new credentials')
 					session['logged_in'] = False
 			else:
@@ -110,20 +118,18 @@ def landingPage():
 		accessDevices.display_iot=[]
 		if not hasattr(accessDevices,'access_device'):
 			accessDevices.access_device=False
-
 		lease=renewLeasedIPMAC()
 		for record in lease:
 			if record.dev_status == '0':
 				accessDevices.display_iot.append([record.mac_addr,record.ip_addr,'Offline'])
 			else:
 				accessDevices.display_iot.append([record.mac_addr,record.ip_addr,'Online'])
-		return render_template('accessDevices.html', display_iot=accessDevices.display_iot, access_device=accessDevices.access_device)
+		cwauthconn=CheckAuthConns(session['username'],session['ip_addr'])
+		return render_template('accessDevices.html', display_iot=accessDevices.display_iot, access_device=accessDevices.access_device,cwauthconn=cwauthconn)
 	elif request.form['submit'] == 'Logout':
 		session['logged_in'] = False
 		session['username'] = ''
 		accessDevices.display_iot=[]
-		accessDevices.access_device=False
-
 		return home()
 	else:
 		session['logged_in'] = False
@@ -151,19 +157,50 @@ def accessDevices():
 				accessDevices.display_iot.append([record.mac_addr,record.ip_addr,'Offline'])
 			else:
 				accessDevices.display_iot.append([record.mac_addr,record.ip_addr,'Online'])
-		return render_template('accessDevices.html', display_iot=accessDevices.display_iot, access_device=accessDevices.access_device)
+		cwauthconn=CheckAuthConns(session['username'],session['ip_addr'])
+		return render_template('accessDevices.html', display_iot=accessDevices.display_iot, access_device=accessDevices.access_device, cwauthconn=cwauthconn)
 	elif request.form['submit'] == 'Disconnect':
 		accessDevices.access_device=False
-		firewalliot.block_rules()
-		return render_template('accessDevices.html', display_iot=accessDevices.display_iot, access_device=accessDevices.access_device)
+		dynfwserv.force_remove(session['ip_addr'])
+		PopAuthConn(session['username'],session['ip_addr'])
+		cwauthconn=CheckAuthConns(session['username'],session['ip_addr'])
+		return render_template('accessDevices.html', display_iot=accessDevices.display_iot, access_device=accessDevices.access_device, cwauthconn=cwauthconn)
 	elif request.form['submit'] == 'Access':
+		if request.form.has_key('sessiontime') and int(request.form['sessiontime']) in [20,60,240,720,1440]:
+			accessDevices.session_time=int(request.form['sessiontime'])
+		else:
+			accessDevices.session_time=20
 		accessDevices.access_device=True
-		firewalliot.allow_rules()
-		return render_template('accessDevices.html', display_iot=accessDevices.display_iot, access_device=accessDevices.access_device)
+		cwauthconn=ManageAuthConns(session['username'],session['ip_addr'],int(time.time()+(accessDevices.session_time*60)))
+		return render_template('accessDevices.html', display_iot=accessDevices.display_iot, access_device=accessDevices.access_device,cwauthconn=cwauthconn)
 	elif request.form['submit'] == 'IoT Portal':
 		pass
 	else:
 		flash('Invalid Request')
+
+def PopAuthConn(cwusername,cwip_addr):
+	for row in db.session.query(AuthConns):
+		if row.username == cwusername and row.ip_addr == cwip_addr:
+			db.session.delete(AuthConns.query.filter(AuthConns.id == row.id).first())
+	db.session.commit()
+
+def CheckAuthConns(cwusername,cwip_addr):
+	if AuthConns.query.filter_by(username = cwusername,ip_addr = cwip_addr).first():
+		return time.strftime('%H:%M:%S %d %b %Y',time.gmtime(float(AuthConns.query.filter_by(username = cwusername,ip_addr = cwip_addr).first().sessiontime)))
+	else:
+		return None
+
+def ManageAuthConns(cwusername,cwip_addr,cwsessiontime):
+	if AuthConns.query.filter_by(username = cwusername,ip_addr = cwip_addr).scalar():
+		authconndb = AuthConns.query.filter_by(username = cwusername,ip_addr = cwip_addr).first()
+		authconndb.sessiontime = cwsessiontime
+		db.session.commit()
+	else:
+		dynfwserv.force_add(session['ip_addr'])
+		db.session.add(AuthConns(username=cwusername,ip_addr=cwip_addr,sessiontime=cwsessiontime,fw_status=accessDevices.access_device))
+		db.session.commit()
+
+	return time.strftime('%H:%M:%S %d %b %Y',time.gmtime(float(AuthConns.query.filter_by(username = cwusername,ip_addr = cwip_addr).first().sessiontime)))
 
 @app.route('/userremove', methods=['GET','POST'])
 def userRemove():
@@ -213,7 +250,7 @@ def userSignup():
 				if session.has_key('init_session') and session['init_session']:
 					session['username'] = username_ui
 					session['init_session'] = False
-				flash(User.query.all())
+					session['ip_addr'] = request.remote_addr
 		else:
 			flash('All the form fields are required. ')
 			set_ui=[username_ui, email_ui, cfemail_ui, phone_ui, cfphone_ui]
@@ -274,6 +311,8 @@ def sendEmail():
 
 def renewLeasedIPMAC():
 	lease=[]
+	lease_mac_list=[]
+
 	with open ('/var/lib/misc/dnsmasq.leases') as f:
 		data=f.readlines()
 		for line in data:
@@ -281,6 +320,18 @@ def renewLeasedIPMAC():
 				lease.append(line.strip('\n').split()+[True])
 			else:
 				lease.append(line.strip('\n').split()+[False])
+		data=[]
+
+	if len(lease) == 0:
+		db.session.query(IoT).delete()
+	else:
+		for record in lease:
+			lease_mac_list.append(record[1])
+
+		for row in db.session.query(IoT):
+			if row.mac_addr not in lease_mac_list:
+				db.session.delete(IoT.query.filter(IoT.mac_addr == row.mac_addr).first())
+		lease_mac_list=[]
 
 	for record in lease:
 		if db.session.query(db.exists().where(IoT.mac_addr == record[1])).scalar():
@@ -298,5 +349,9 @@ def renewLeasedIPMAC():
 
 if __name__ == "__main__":
 	db.create_all()
+	db.session.query(IoT).delete()
+	db.session.query(AuthConns).delete()
+	db.session.commit()
 	firewalliot.block_rules()
-	app.run(host='0.0.0.0', port=443, threaded=True, debug=True, ssl_context=context)
+	app.run(host='0.0.0.0', port=443, threaded=True, ssl_context=context, debug=True)
+

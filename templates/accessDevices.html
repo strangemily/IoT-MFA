@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head> <title>IoT Portal</title>
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+	<link rel="stylesheet" href="../static/css/bootstrap.min.css">
+</head>
+<body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+	{% if messages %}
+		{% for message in messages %}
+		<div class="alert alert-warning" role="alert">
+			{{ message[1] }}
+		</div>
+		{% endfor %}
+	{% endif %}
+{% endwith %}
+
+<div style="positon:relative">
+<div class="panel panel-primary" style="position:absolute; top:30%; left:50%; transform:translateX(-50%) translateY(-00%)">
+<div class="panel-heading"> <strong class="panel-title">IoT Portal</strong> </div>
+<div class="panel-body">
+<form action="/accessdevices" method="post">
+	<table style="border-collapse:separate;border-spacing:10px 10px">
+	<tr><th> Access: </th>
+	<td> {{ access_device }} </td>
+	<td> {{ cwauthconn }} </td> </tr>
+	<tr> <td> <select name="sessiontime" class="form-control">
+		<option value="20"> 20 Mins </option>
+		<option value="60"> 01 Hrs </option>
+		<option value="240"> 04 Hrs </option>
+		<option value="720"> 12 Hrs </option>
+		<option value="1440"> 1 Day </option>
+	</select> </td>
+	<td style="min-width:120px;overflow:hidden"> <input type="submit" name="submit" class="btn btn-success btn-block" value="Access"/> </td>
+	<td style="min-width:120px;overflow:hidden"> <input type="submit" name="submit" class="btn btn-warning btn-block" value="Disconnect"/> </td> </tr>
+	<tr></tr><tr></tr>
+	<tr> <th> MAC </th> <th> IP </th> <th> Status</th> </tr>
+	{% for record in display_iot %}
+		<tr> <td> {{ record[0] }} </td> <td>{{ record[1] }}</td> <td style="min-width:120px;overflow:hidden">{{ record[2] }}</td></tr>
+	{% endfor %}
+	<tr> <td></td> <td style="min-width:120px;overflow:hidden"> <input type="submit" name="submit" class="btn btn-success btn-block" value="Refresh"/> </td>
+	<td style="min-width:120px;overflow:hidden"> <input type="submit" name="submit" class="btn btn-danger btn-block" value="Cancel"/> </td> </tr>
+	</table>
+</form>
+</div>
+</div>
+</div>
+</body>
+</html>

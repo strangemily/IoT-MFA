@@ -1,6 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head> <title>User Password Reset</title>
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 	<link rel="stylesheet" href="../static/css/bootstrap.min.css">
 </head>
 <body>
@@ -19,7 +20,6 @@
 <div class="panel-heading"> <strong class="panel-title">Password Reset</strong> </div>
 <div class="panel-body">
 <form action="/passwdreset" method="post">
-	{{ form.csrf }} 
 	<table style="border-collapse:separate; border-spacing:20px 20px">
 	<tr> <td> <input type="password" name="password_ui" placeholder="Password"/> </td>
 	<td> <input type="password" name="cfpasswd_ui" placeholder="Confirm Password"/> </td> </tr>
