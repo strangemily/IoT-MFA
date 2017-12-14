@@ -19,34 +19,6 @@ def allow_rules():
 		jump='ACCEPT')
 	filtable.append_rule('INPUT',rulessh)
 
-	ruledns1=Rule(
-		in_interface='lo',
-		protocol='udp',
-		matches=[Match('udp', '--dport 53')],
-		jump='ACCEPT')
-	filtable.append_rule('INPUT',ruledns1)
-
-	ruledns2=Rule(
-		in_interface='lo',
-		protocol='udp',
-		matches=[Match('udp', '--sport 53')],
-		jump='ACCEPT')
-	filtable.append_rule('INPUT',ruledns2)
-
-	ruledns3=Rule(
-		out_interface='lo',
-		protocol='udp',
-		matches=[Match('udp', '--dport 53')],
-		jump='ACCEPT')
-	filtable.append_rule('OUTPUT',ruledns3)
-
-	ruledns4=Rule(
-		out_interface='lo',
-		protocol='udp',
-		matches=[Match('udp', '--sport 53')],
-		jump='ACCEPT')
-	filtable.append_rule('OUTPUT',ruledns4)
-
 	rulecs=Rule(
 		in_interface='wlan0',
 		out_interface='eth0',
@@ -86,6 +58,16 @@ def allow_rules():
 		jump='ACCEPT')
 	filtable.append_rule('INPUT',rule5)
 
+	rule6=Rule(
+		in_interface='lo',
+		jump='ACCEPT')
+	filtable.append_rule('INPUT',rule6)
+
+	rule7=Rule(
+		out_interface='lo',
+		jump='ACCEPT')
+	filtable.append_rule('OUTPUT',rule7)
+
 	filtable.set_policy('FORWARD','DROP')
 	filtable.set_policy('INPUT','DROP')
 	filtable.set_policy('OUTPUT','DROP')
@@ -107,34 +89,6 @@ def block_rules():
 		matches=[Match('tcp', '--dport 22')],
 		jump='ACCEPT')
 	filtable.append_rule('INPUT',rulessh)
-
-	ruledns1=Rule(
-		in_interface='lo',
-		protocol='udp',
-		matches=[Match('udp', '--dport 53')],
-		jump='ACCEPT')
-	filtable.append_rule('INPUT',ruledns1)
-
-	ruledns2=Rule(
-		in_interface='lo',
-		protocol='udp',
-		matches=[Match('udp', '--sport 53')],
-		jump='ACCEPT')
-	filtable.append_rule('INPUT',ruledns2)
-
-	ruledns3=Rule(
-		out_interface='lo',
-		protocol='udp',
-		matches=[Match('udp', '--dport 53')],
-		jump='ACCEPT')
-	filtable.append_rule('OUTPUT',ruledns3)
-
-	ruledns4=Rule(
-		out_interface='lo',
-		protocol='udp',
-		matches=[Match('udp', '--sport 53')],
-		jump='ACCEPT')
-	filtable.append_rule('OUTPUT',ruledns4)
 
 	rulecs=Rule(
 		in_interface='wlan0',
@@ -175,6 +129,16 @@ def block_rules():
 		in_interface='wlan0',
 		jump='ACCEPT')
 	filtable.append_rule('INPUT',rule4)
+
+	rule5=Rule(
+		in_interface='lo',
+		jump='ACCEPT')
+	filtable.append_rule('INPUT',rule5)
+
+	rule6=Rule(
+		out_interface='lo',
+		jump='ACCEPT')
+	filtable.append_rule('OUTPUT',rule6)
 
 	filtable.set_policy('FORWARD','DROP')
 	filtable.set_policy('INPUT','DROP')
