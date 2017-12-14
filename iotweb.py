@@ -216,7 +216,7 @@ def accessDevices():
 	elif request.form['submit'] == 'Disconnect':
 		accessDevices.access_device=False
 		if not json.loads(mqtt_wsclient.sendcommand('force_remove#'+session['username']+'#'+session['ip_addr'])):
-			flash("Gatewat Error, Please Check and Retry")
+			flash("Gateway Error, Please Check and Retry")
 		cwauthconn=CheckAuthConns(session['username'],session['ip_addr'])
 		return render_template('accessDevices.html', display_iot=accessDevices.display_iot, access_device=accessDevices.access_device, cwauthconn=cwauthconn)
 	elif request.form['submit'] == 'Access':
