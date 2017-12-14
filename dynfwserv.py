@@ -32,6 +32,7 @@ def print_table():
 def rule_manager():
 	filtable=Table('filter')
 	firewalliot.block_rules()
+	db.create_all()
 	db.session.query(AuthConns).delete()
 	db.session.commit()
 	open('/var/log/firewall','w').close()
