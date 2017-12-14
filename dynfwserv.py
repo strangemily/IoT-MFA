@@ -34,6 +34,7 @@ def rule_manager():
 	firewalliot.block_rules()
 	db.session.query(AuthConns).delete()
 	db.session.commit()
+	open('/var/log/firewall','w').close()
 	while True:
 		for row in db.session.query(AuthConns):
 			if int(row.sessiontime) <= int(time.time()):

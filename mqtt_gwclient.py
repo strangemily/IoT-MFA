@@ -24,7 +24,7 @@ def sendresponse(response):
 	client.publish(topic="iotmfa/response", payload = response)
 
 def manageAuthConns(cwusername,cwip_addr,cwsessiontime):
-	if AuthConns.query.filter_by(username = cwusername,ip_addr = cwip_addr).scalar():
+	if AuthConns.query.filter_by(username = cwusername,ip_addr = cwip_addr).first():
 		authconndb = AuthConns.query.filter_by(username = cwusername,ip_addr = cwip_addr).first()
 		authconndb.sessiontime = int(cwsessiontime)
 		db.session.commit()
