@@ -12,19 +12,12 @@ def allow_rules():
 	filtable.flush_chain('FORWARD')
 	filtable.flush_chain('OUTPUT')
 	filtable.flush_chain('INPUT')
-	#nattable.delete_chain()
 
 	rulessh=Rule(
 		protocol='tcp',
 		matches=[Match('tcp', '--dport 22')],
 		jump='ACCEPT')
 	filtable.append_rule('INPUT',rulessh)
-
-	rulehttp=Rule(
-		protocol='tcp',
-		matches=[Match('tcp', '--dport 443')],
-		jump='ACCEPT')
-	filtable.append_rule('INPUT',rulehttp)
 
 	ruledns1=Rule(
 		in_interface='lo',
@@ -115,12 +108,6 @@ def block_rules():
 		jump='ACCEPT')
 	filtable.append_rule('INPUT',rulessh)
 
-	rulehttp=Rule(
-		protocol='tcp',
-		matches=[Match('tcp', '--dport 443')],
-		jump='ACCEPT')
-	filtable.append_rule('INPUT',rulehttp)
-
 	ruledns1=Rule(
 		in_interface='lo',
 		protocol='udp',
@@ -192,21 +179,3 @@ def block_rules():
 	filtable.set_policy('FORWARD','DROP')
 	filtable.set_policy('INPUT','DROP')
 	filtable.set_policy('OUTPUT','DROP')
-
-def temp():
-	filtable=Table('filter')
-
-	rulecs=Rule(
-		in_interface='wlan0',
-		out_interface='eth0',
-		protocol='udp',
-		matches=[Match('udp', '--dport 32100')],
-		jump='ACCEPT')
-	filtable.append_rule('FORWARD',rulecs)
-
-	rule0=Rule(
-		in_interface='eth0',
-		out_interface='wlan0',
-		jump='ACCEPT',
-		matches=[Match('state','--state RELATED,ESTABLISHED')])
-	filtable.append_rule('FORWARD',rule0)
