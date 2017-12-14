@@ -133,3 +133,12 @@ def force_remove(ip_addr):
 		filtable.delete_rule('FORWARD',rule0)
 	except IptablesError as e:
 		pass
+
+	try:
+		rule1=Rule(
+			jump='LOG',
+			protocol='udp',
+			matches=[Match('udp','--dst '+ip_addr),Match('limit','--limit 1/hour --limit-burst 1')])
+		filtable.delete_rule('FORWARD',rule1)
+	except IptablesError as e:
+		pass
